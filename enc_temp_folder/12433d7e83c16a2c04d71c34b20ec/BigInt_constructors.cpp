@@ -38,17 +38,18 @@ BigInt::BigInt(std::string str_num) {
 	if (str_num[0] == '-' || str_num[0] == '+') {					//if first + or -
 		first_index = 1;
 	}
-	int bit = 0, carry = 0, new_carry = 0;
-	for (int i = first_index; i >= last_index;) {
-		carry = 0, new_carry = 0;
-		for (int left_ind = first_index; left_ind >= last_index; left_ind++) {
-			new_carry = (carry * 10 + tmp[left_ind]) % 2;
-			tmp[left_ind] = (carry * 10 + tmp[i]) / 2;
-			carry = new_carry;
-		}//in the end result bit to write in carry
+	char carry = 0, to_divide = 0;
+	int bit_to_write = 0;
+	for (int i = first_index; i <= last_index; bit_to_write++, to_divide = 0, carry = 0) {
+		for (int j = i; j <= last_index; j++) {
+			to_divide = carry * 10 + tmp[j];
+			carry = to_divide % 2;
+			tmp[j] = to_divide / 2;
+		}
+		if (bit_to_write % 32 == 0) number.resize(number.size() + 1);
+		number[bit_to_write / 32] = number[bit_to_write / 32] + (((unsigned int)carry) << (bit_to_write));
+		if (tmp[i] == 0) i++;
 	}
-
-	
 }
 
 BigInt::BigInt(const BigInt& num_2) {

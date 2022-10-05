@@ -73,4 +73,6 @@ BigInt operator|(const BigInt& num_1, const BigInt& num_2);
 
 
 std::ostream& operator<<(std::ostream& o, const BigInt& i);
+
+void IncreaseDecNum(vector<int> &number, int bit);
 #endif

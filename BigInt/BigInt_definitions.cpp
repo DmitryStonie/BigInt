@@ -162,10 +162,29 @@ BigInt::operator int() const {
 BigInt::operator std::string() const {
 	string str = "";
 	if (sign == '-') str.push_back('-');
-	vector<int>dec_num;
+	vector<int>dec_num(1);
 	long long tmp = 0;
-	long long decs[10] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
-	
+	long long decs[9] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
+	int dec_base = 1000000000;
+	int bit = 0;
+	long long index = (used_digits(*this))* 32 - 1;
+	for (long long i = index; i >= 0; i--) {
+		bit = (number[i / 32] >> (i % 32)) & 1;
+		IncreaseDecNum(dec_num, bit);
+	}
+	int size = dec_num.size(), flag = 0;
+	for (int j = 8; j >= 0; j--) {
+		bit = (dec_num[size - 1] / decs[j]) % 10;
+		if (flag == 0 && bit != 0) flag = 1;
+		if(flag) str.push_back((char)bit + 48);
+	}
+	for (int i = size - 2; i >= 0; i--) {
+		for (int j = 8; j >= 0; j--) {
+			bit = (dec_num[i] / decs[i]) % 10;
+			str.push_back((char)bit + 48);
+		}
+	}
+	return str;
 }
 
 size_t BigInt::size() const {
@@ -217,3 +236,4 @@ std::ostream& operator<<(std::ostream& o, const BigInt& i) {
 	o << (std::string)i;
 	return o;
 }
+

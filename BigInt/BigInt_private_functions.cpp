@@ -124,3 +124,34 @@ void BigInt::carry(BigInt& number, long long new_number, int num_index) const { 
 		}
 	}
 }
+
+void IncreaseDecNum(vector<int> &number, int bit) {
+	for (int i = 0; i < number.size(); i++) {
+		if (number[i] >= 1000000000) {
+			if (i + 1 == number.size()) {
+				number.resize(number.size() + 1);
+				number[number.size() - 1] = 0;
+			}
+			number[i + 1] += 1;
+			number[i] = number[i] % 1000000000;
+		}
+		number[i] = number[i] * 2;
+		if (number[i] >= 1000000000) {
+			if (i + 1 == number.size()) {
+				number.resize(number.size() + 1);
+				number[number.size() - 1] = 0;
+			}
+			number[i + 1] += 1;
+			number[i] = number[i] % 1000000000;
+		}
+	}
+	if (bit == 1) {
+		number[0]++;
+		for (int i = 0; number[i] >= 1000000000; i++) {
+			if (i + 1 == number.size()) number.resize(number.size() + 1);
+			number[number.size() - 1] = 0;
+			number[i + 1] += 1;
+			number[i] = number[i] % 1000000000;
+		}
+	}
+}
