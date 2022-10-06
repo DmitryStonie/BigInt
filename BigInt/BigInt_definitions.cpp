@@ -161,27 +161,44 @@ BigInt::operator int() const {
 
 BigInt::operator std::string() const {
 	string str = "";
+	if (*this == BigInt(0)) {	//mistakes
+		str.push_back('0');
+		return str;
+	}
 	if (sign == '-') str.push_back('-');
 	vector<int>dec_num(1);
+	dec_num[0] = 1;	
 	long long tmp = 0;
 	long long decs[9] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
-	int dec_base = 1000000000;
-	int bit = 0;
-	long long index = (used_digits(*this))* 32 - 1;
-	for (long long i = index; i >= 0; i--) {
-		bit = (number[i / 32] >> (i % 32)) & 1;
-		IncreaseDecNum(dec_num, bit);
+	int dec_base = 1000000000, carry = 0;
+	long long index = (used_digits(*this) - 1)* 32 + digits_in_highest_digit(*this, used_digits(*this)) - 2; //-1 for index - 1 for first digit
+	for (int i = index; i >= 0; i--) {
+		carry = number[i / 32] >> (i % 32) & 1;
+		for (int j = 0; j < dec_num.size(); j++) {
+			dec_num[j] = dec_num[j] * 2 + carry;
+			carry = 0;
+			if (dec_num[j] >= dec_base) {
+				carry = 1;
+				dec_num[j] = dec_num[j] % dec_base;
+			}
+		}
+		if (carry) {
+			dec_num.resize(dec_num.size() + 1);
+			dec_num[dec_num.size() - 1] = 1;
+		}
 	}
-	int size = dec_num.size(), flag = 0;
+	int flag = 1;
+	char char_convert = 48;
 	for (int j = 8; j >= 0; j--) {
-		bit = (dec_num[size - 1] / decs[j]) % 10;
-		if (flag == 0 && bit != 0) flag = 1;
-		if(flag) str.push_back((char)bit + 48);
+		if (flag && (dec_num[dec_num.size() - 1] / decs[j]) % 10 == 0) {
+			continue;
+		}
+		else flag = 0;
+		str.push_back((dec_num[dec_num.size() - 1] / decs[j]) % 10 + char_convert);
 	}
-	for (int i = size - 2; i >= 0; i--) {
+	for (int i = dec_num.size() - 2; i >= 0; i--) {
 		for (int j = 8; j >= 0; j--) {
-			bit = (dec_num[i] / decs[i]) % 10;
-			str.push_back((char)bit + 48);
+			str.push_back((dec_num[i] / decs[j]) % 10 + char_convert);
 		}
 	}
 	return str;

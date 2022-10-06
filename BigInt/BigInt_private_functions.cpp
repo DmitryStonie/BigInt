@@ -17,7 +17,7 @@ char BigInt::set_sign(char symbol) {
 
 int BigInt::digits_in_highest_digit(BigInt& num, int used_digits) {	//returns number of used digits in highest unzero digit
 	int i = 0;
-	int tmp = num.number[used_digits - 1];
+	unsigned int tmp = num.number[used_digits - 1];
 	for (; tmp > 0;) {
 		tmp = tmp >> 1;
 		i++;
@@ -28,7 +28,7 @@ int BigInt::digits_in_highest_digit(BigInt& num, int used_digits) {	//returns nu
 
 int BigInt::digits_in_highest_digit(const BigInt& num, int used_digits) {	//returns number of used digits in highest unzero digit
 	int i = 0;
-	int tmp = num.number[used_digits - 1];
+	unsigned int tmp = num.number[used_digits - 1];
 	for (; tmp > 0;) {
 		tmp = tmp >> 1;
 		i++;
@@ -39,7 +39,7 @@ int BigInt::digits_in_highest_digit(const BigInt& num, int used_digits) {	//retu
 
 int BigInt::digits_in_highest_digit(const BigInt& num, int used_digits) const {	//returns number of used digits in highest unzero digit
 	int i = 0;
-	int tmp = num.number[used_digits - 1];
+	unsigned int tmp = num.number[used_digits - 1];
 	for (; tmp > 0;) {
 		tmp = tmp >> 1;
 		i++;
