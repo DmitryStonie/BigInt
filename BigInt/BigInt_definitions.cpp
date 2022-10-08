@@ -48,6 +48,9 @@ const BigInt BigInt::operator--(int) {
 
 BigInt& BigInt::operator+=(const BigInt& num_2) {
 	int num_2_digits = used_digits(num_2);
+	if (number.size() < num_2_digits) {
+		number.resize(num_2_digits);
+	}
 	long long tmp = 0;
 	if ((*this).sign == num_2.sign) {
 		for (int i = 0; i < num_2_digits; i++) {
@@ -60,7 +63,18 @@ BigInt& BigInt::operator+=(const BigInt& num_2) {
 			tmp = (long long)(*this).number[i] - (long long)num_2.number[i];
 			carry((*this), tmp, i);
 		}
+		if ((*this) >= BigInt(0)) sign = '+';
+		else sign = '-';
 	}
+	//check for zero
+	int not_zero = 0;
+	for (int i = used_digits(*this); i >= 0; i--) {
+		if (number[i] != 0) {
+			not_zero = 1;
+			break;
+		}
+	}
+	if (not_zero == 0) sign = '+';
 	return *this;
 }
 

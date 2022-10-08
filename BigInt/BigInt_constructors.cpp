@@ -34,7 +34,7 @@ BigInt::BigInt(std::string str_num) {
 	int last_index = str_num.length() - 1, first_index = 0;
 	for (int i = 0; i <= last_index; i++) tmp[i] -= 48;				//from chars to numbers
 	sign = set_sign(str_num[0]);
-	number.resize(1);
+	number.resize(default_size);
 	if (str_num[0] == '-' || str_num[0] == '+') {					//if first + or -
 		first_index = 1;
 	}
@@ -50,10 +50,10 @@ BigInt::BigInt(std::string str_num) {
 			number.resize(number.size() + 1);
 			number[number.size() - 1] = 0;
 		}
-		number[BitsWritten / 32] = (number[BitsWritten / 32] << 1) | carry;
+		number[BitsWritten / 32] = number[BitsWritten / 32] | (carry << (BitsWritten % 32));
 		BitsWritten++;
-		for (int left_ind = i; i <= last_index; left_ind++) {
-			if (tmp[left_ind] == 0) {
+		for (; i <= last_index;) {
+			if (tmp[i] == 0) {
 				i++;
 			}
 			else {

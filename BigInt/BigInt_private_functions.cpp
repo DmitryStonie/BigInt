@@ -1,5 +1,6 @@
 ﻿#include <string>
 #include "BigInt.h"
+#include <iostream>
 
 int BigInt::is_number(std::string& str_num) {
 	if ((str_num[0] == '+' || str_num[0] == '-' || (str_num[0] >= '0' && str_num[0] <= '9')) == 0) return 0;
@@ -50,44 +51,66 @@ int BigInt::digits_in_highest_digit(const BigInt& num, int used_digits) const {	
 
 int BigInt::used_digits(BigInt& num) {	//return number of highest unzero digit
 	int i = num.number.size() - 1;
-	for (; num.number[i] == 0; i--);
+	if (i == 0) return 1;
+	for (; i >= 0;) {
+		if (num.number[i] == 0) {
+			i--;
+		}
+		else break;
+	}
+	if (i == -1) i = 0;
 	return i + 1;
 }
 
 int BigInt::used_digits(const BigInt& num) {	//return number of highest unzero digit
 	int i = num.number.size() - 1;
-	for (; num.number[i] == 0; i--);
+	if (i == 0) return 1;
+	for (; i >= 0;) {
+		if (num.number[i] == 0) {
+			i--;
+		}
+		else break;
+	}
+	if (i == -1) i = 0;
 	return i + 1;
 }
 
 int BigInt::used_digits(const BigInt& num) const {	//funny, but without this doesn't compile ==
 	int i = num.number.size() - 1;
 	if (i == 0) return 1;
-	for (; num.number[i] == 0; i--);
+	for (;i >= 0;) {
+		if (num.number[i] == 0) {
+			i--;
+		}
+		else break;
+	}
+	if (i == -1) i = 0;
 	return i + 1;
 }
 
 void BigInt::carry(BigInt& number, long long new_number, int num_index) { //carry ����������
-	int num_1_digits = used_digits(*this);
-	for (int i = num_index;; i++) {
-		if (new_number >= base) {		//if change base, make <=
-			if (i == num_1_digits - 1) {	//bounds checking
-				number.number.resize(num_1_digits + 1);
-				num_1_digits++;
-				number.number[i + 1] = 0;
-			}
-			number.number[i] = (unsigned int)(new_number % number.base);
-			new_number = new_number / number.base + number.number[i + 1];
+	int num_size = number.number.size();
+	int num_used_digits = used_digits(number);
+	for (int i = num_index;;) {
+		if (i == num_size - 1) {//add new digit
+			number.number.resize(num_size + 1);
+			num_size++;
+		}
+		if (new_number >= base) { //carry up
+			number.number[i] = (unsigned int)new_number % base;
+			new_number = new_number / base + number.number[i + 1];
+			i++;
 		}
 		else if (new_number < 0) {
-			if (i == num_1_digits - 1) {	//if carry is impossible
-				if (number.sign == '+') number.sign = '-';
+			if (i == num_used_digits - 1) {
+				if (number.sign == '+') number.sign = '-';//maybe bug because i change sign in +=
 				else number.sign = '+';
-				number.number[i] = -new_number;					//check this
+				number.number[i] = (unsigned int)(-new_number);
 				break;
 			}
-			number.number[i] = (unsigned int)((new_number + number.base) % number.base);
-			new_number = (long long)(number.number[i + 1]) - 1;
+			number.number[i] = base + new_number;
+			new_number = number.number[i + 1] - 1;
+			i++;
 		}
 		else {
 			number.number[i] = (unsigned int)new_number;
@@ -97,26 +120,30 @@ void BigInt::carry(BigInt& number, long long new_number, int num_index) { //carr
 }
 
 void BigInt::carry(BigInt& number, long long new_number, int num_index) const { //carry ����������
-	int num_1_digits = used_digits(*this);
-	for (int i = num_index;; i++) {
-		if (new_number >= base) {		//if change base, make <=
-			if (i == num_1_digits - 1) {	//bounds checking
-				number.number.resize(num_1_digits + 1);
-				num_1_digits++;
-				number.number[i + 1] = 0;
-			}
-			number.number[i] = (unsigned int)(new_number % number.base);
-			new_number = new_number / number.base + number.number[i + 1];
+	int num_size = number.size();
+	int num_used_digits = used_digits(number);
+	for (int i = num_index;;) {
+		if (i == num_size - 1) {//add new digit
+			number.number.resize(num_size + 1);
+			number.number[i + 1] = 0;
+			num_size++;
+		}
+		if (new_number >= base) { //carry up
+			number.number[i] = (unsigned int)new_number % base;
+			new_number = new_number / base + number.number[i + 1];
+			i++;
 		}
 		else if (new_number < 0) {
-			if (i == num_1_digits - 1) {	//if carry is impossible
+			if (i == num_used_digits - 1) {
 				if (number.sign == '+') number.sign = '-';
 				else number.sign = '+';
-				number.number[i] = -new_number;					//check this
+				number.number[i] = (unsigned int)(-new_number);
 				break;
 			}
-			number.number[i] = (unsigned int)((new_number + number.base) % number.base);
-			new_number = (long long)(number.number[i + 1]) - 1;
+			number.number[i] = base + new_number;
+			new_number = number.number[i + 1] - 1;
+			number.number[i + 1]--;
+			i++;
 		}
 		else {
 			number.number[i] = (unsigned int)new_number;
