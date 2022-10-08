@@ -59,16 +59,27 @@ BigInt& BigInt::operator+=(const BigInt& num_2) {
 		}
 	}
 	else {
+		BigInt tmp_num(*this);
+		if (sign == '+' && ((*this) < -num_2)) {
+			*this = num_2;
+		}
+		else if (sign == '+' && ((*this) >= -num_2)) {
+			tmp_num = num_2;
+		}
+		else if(sign == '-' && (-(*this) < num_2)){
+			*this = num_2;
+		}
+		else { //sign == '-' && (-(*this) >= num_2)
+			tmp_num = num_2;
+		}
 		for (int i = 0; i < num_2_digits; i++) {
-			tmp = (long long)(*this).number[i] - (long long)num_2.number[i];
+			tmp = (long long)(*this).number[i] - (long long)tmp_num.number[i];
 			carry((*this), tmp, i);
 		}
-		if ((*this) >= BigInt(0)) sign = '+';
-		else sign = '-';
 	}
 	//check for zero
 	int not_zero = 0;
-	for (int i = used_digits(*this); i >= 0; i--) {
+	for (int i = used_digits(*this) - 1; i >= 0; i--) {
 		if (number[i] != 0) {
 			not_zero = 1;
 			break;
@@ -124,6 +135,9 @@ BigInt& BigInt::operator^=(const BigInt& num_2) {
 		number[i] ^= num_2.number[i];
 	}
 	for (int j = num_1_digits; j < num_2_digits; j++) number[j] = num_2.number[j] ^ 0;
+	if (sign != num_2.sign) {
+		sign = '-';
+	} else sign = '+';
 	return *this;
 }
 
@@ -138,6 +152,10 @@ BigInt& BigInt::operator&=(const BigInt& num_2) {
 		number[i] &= num_2.number[i];
 	}
 	for (int j = num_2_digits; j < num_1_digits; j++) number[j] = 0;
+	if (sign == '+' && num_2.sign == '+') {
+		sign = '+';
+	}
+	else sign = '-';
 	return *this;
 }
 
@@ -149,6 +167,10 @@ BigInt& BigInt::operator|=(const BigInt& num_2) {
 		number[i] |= num_2.number[i];
 	}
 	for (int j = num_1_digits; j < num_2_digits; j++) number[j] = num_2.number[j];
+	if (sign == '+' || num_2.sign == '+') {
+		sign = '+';
+	}
+	else sign = '-';
 	return *this;
 }
 

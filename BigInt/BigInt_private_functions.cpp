@@ -90,65 +90,77 @@ int BigInt::used_digits(const BigInt& num) const {	//funny, but without this doe
 
 void BigInt::carry(BigInt& number, long long new_number, int num_index) { //carry ����������
 	int num_size = number.number.size();
-	int num_used_digits = used_digits(number);
-	for (int i = num_index;;) {
-		if (i == num_size - 1) {//add new digit
-			number.number.resize(num_size + 1);
-			num_size++;
-		}
-		if (new_number >= base) { //carry up
-			number.number[i] = (unsigned int)new_number % base;
-			new_number = new_number / base + number.number[i + 1];
-			i++;
-		}
-		else if (new_number < 0) {
-			if (i == num_used_digits - 1) {
-				if (number.sign == '+') number.sign = '-';//maybe bug because i change sign in +=
-				else number.sign = '+';
-				number.number[i] = (unsigned int)(-new_number);
+	int num_used_digits = used_digits(*this);
+	if (num_index == num_size - 1 && new_number >= base) {//add new digit
+		number.number.resize(num_size + 1);
+		num_size++;
+	}
+	if (new_number >= base) { //carry up //need to find bigger nonzero digit
+		long long tmp;
+		for (int j = num_index + 1; j < num_size; j++) {
+			tmp = (long long)number.number[j] + 1;
+			if (tmp >= base) {
+				number.number[j] = (unsigned int)(tmp % base);
+			}
+			else {
+				number.number[j] = (unsigned int)tmp;
 				break;
 			}
-			number.number[i] = base + new_number;
-			new_number = number.number[i + 1] - 1;
-			i++;
 		}
-		else {
-			number.number[i] = (unsigned int)new_number;
-			break;
+		number.number[num_index] = (unsigned int)new_number % base;
+	}
+	else if (new_number < 0) {
+		for (int j = num_index + 1; j < num_used_digits; j++) {	//fing higher nonzero digit and carry 1 down through digits between
+			if (number.number[j] > 0) {
+				number.number[j]--;
+				for (int k = j - 1; k >= num_index; k--) {	//carry 1 down
+					number.number[k] = (unsigned int)(number.base - 1);
+				}
+				break;
+			}
 		}
+		number.number[num_index] += new_number + 1;	// +1 because there are base - 1 but should be base
+	}
+	else {
+		number.number[num_index] = (unsigned int)new_number;
 	}
 }
 
 void BigInt::carry(BigInt& number, long long new_number, int num_index) const { //carry ����������
-	int num_size = number.size();
-	int num_used_digits = used_digits(number);
-	for (int i = num_index;;) {
-		if (i == num_size - 1) {//add new digit
-			number.number.resize(num_size + 1);
-			number.number[i + 1] = 0;
-			num_size++;
-		}
-		if (new_number >= base) { //carry up
-			number.number[i] = (unsigned int)new_number % base;
-			new_number = new_number / base + number.number[i + 1];
-			i++;
-		}
-		else if (new_number < 0) {
-			if (i == num_used_digits - 1) {
-				if (number.sign == '+') number.sign = '-';
-				else number.sign = '+';
-				number.number[i] = (unsigned int)(-new_number);
+	int num_size = number.number.size();
+	int num_used_digits = used_digits(*this);
+	if (num_index == num_size - 1 && new_number >= base) {//add new digit
+		number.number.resize(num_size + 1);
+		num_size++;
+	}
+	if (new_number >= base) { //carry up //need to find bigger nonzero digit
+		long long tmp;
+		for (int j = num_index + 1; j < num_size; j++) {
+			tmp = (long long)number.number[j] + 1;
+			if (tmp >= base) {
+				number.number[j] = (unsigned int)(tmp % base);
+			}
+			else {
+				number.number[j] = (unsigned int)tmp;
 				break;
 			}
-			number.number[i] = base + new_number;
-			new_number = number.number[i + 1] - 1;
-			number.number[i + 1]--;
-			i++;
 		}
-		else {
-			number.number[i] = (unsigned int)new_number;
-			break;
+		number.number[num_index] = (unsigned int)new_number % base;
+	}
+	else if (new_number < 0) {
+		for (int j = num_index + 1; j < num_used_digits; j++) {	//fing higher nonzero digit and carry 1 down through digits between
+			if (number.number[j] > 0) {
+				number.number[j]--;
+				for (int k = j - 1; k >= num_index; k--) {	//carry 1 down
+					number.number[k] = (unsigned int)(number.base - 1);
+				}
+				break;
+			}
 		}
+		number.number[num_index] += new_number + 1;	// +1 because there are base - 1 but should be base
+	}
+	else {
+		number.number[num_index] = (unsigned int)new_number;
 	}
 }
 
