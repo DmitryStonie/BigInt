@@ -93,16 +93,27 @@ BigInt& BigInt::operator*=(const BigInt& num_2) {
 	int num_1_digits = used_digits(*this);
 	int num_2_digits = used_digits(num_2);
 	long long tmp = 0;
-	BigInt num_1_tmp = *this;
-	for (int i = 0; i < num_1_digits; i++) {
-		number[i] = 0;
+	BigInt num_1_tmp(*this);
+	BigInt num_2_tmp(num_2);
+	if (num_1_digits < num_2_digits) {
+		num_1_tmp.number.resize(num_2_digits);
+		num_1_digits = num_2_digits;
+	}
+	else {
+		num_2_tmp.number.resize(num_1_digits);
+		num_2_digits = num_1_digits;
 	}
 	for (int i = 0; i < num_2_digits; i++) {
 		for (int j = 0; j < num_1_digits; j++) {
-			tmp = (long long)num_1_tmp.number[j] * (long long)num_2.number[i];
-			carry(*this, tmp, i + j);
+			tmp = (long long)num_1_tmp.number[j] * (long long)num_2_tmp.number[i];
+			carry(num_1_tmp, tmp, i + j);
 		}
 	}
+	if (num_1_tmp.sign != num_2_tmp.sign) {//need transition back
+		num_1_tmp.sign = '-';
+	}
+	else num_1_tmp.sign = '+';
+	*this = num_1_tmp;
 	return *this;
 }
 
@@ -130,14 +141,44 @@ BigInt& BigInt::operator/=(const BigInt& num_2) {
 BigInt& BigInt::operator^=(const BigInt& num_2) {
 	int num_2_digits = used_digits(num_2);
 	int num_1_digits = used_digits(*this);
-	number.resize(max(num_1_digits, num_2_digits));
-	for (int i = 0; i < num_2_digits && i < num_1_digits; i++) {
-		number[i] ^= num_2.number[i];
+	BigInt num_1_tmp(*this);//need to create copies and make ones complement
+	BigInt num_2_tmp(num_2);
+	if (num_1_digits < num_2_digits) {
+		num_1_tmp.number.resize(num_2_digits);
+		num_1_digits = num_2_digits;
 	}
-	for (int j = num_1_digits; j < num_2_digits; j++) number[j] = num_2.number[j] ^ 0;
-	if (sign != num_2.sign) {
-		sign = '-';
-	} else sign = '+';
+	else {
+		num_2_tmp.number.resize(num_1_digits);
+		num_2_digits = num_1_digits;
+	}
+	if (num_1_tmp.sign == '-') {
+		for (int i = 0; i < num_1_digits; i++) {
+			num_1_tmp.number[i] = ~num_1_tmp.number[i];
+		}
+		carry(num_1_tmp, ((long long)num_1_tmp.number[0]) + 1, 0);
+	}
+	if (num_2_tmp.sign == '-') {
+		for (int i = 0; i < num_2_digits; i++) {
+			num_2_tmp.number[i] = ~num_2_tmp.number[i];
+		}
+		carry(num_2_tmp, ((long long)num_2_tmp.number[0]) + 1, 0);
+	}
+
+	for (int i = 0; i < num_2_digits; i++) {	//-1 due to coorrect work in highest digit
+		num_1_tmp.number[i] ^= num_2_tmp.number[i];
+	}
+	if ((num_1_tmp.sign == '-' && num_2_tmp.sign == '+') || (num_2_tmp.sign == '-' && num_1_tmp.sign == '+')) {	//inverse
+		for (int i = 0; i < num_1_digits; i++) {
+			num_1_tmp.number[i] = ~num_1_tmp.number[i];
+		}
+		carry(num_1_tmp, ((long long)num_1_tmp.number[0]) + 1, 0);
+	}
+	if (num_1_tmp.sign ==  num_2_tmp.sign) {//need transition back
+		num_1_tmp.sign = '+';
+	}
+	else num_1_tmp.sign = '-';
+	*this = num_1_tmp;
+	return *this;
 	return *this;
 }
 
@@ -148,29 +189,86 @@ BigInt& BigInt::operator%=(const BigInt& num_2) {
 BigInt& BigInt::operator&=(const BigInt& num_2) {
 	int num_2_digits = used_digits(num_2);
 	int num_1_digits = used_digits(*this);
-	for (int i = 0; i < num_2_digits; i++) {
-		number[i] &= num_2.number[i];
+	BigInt num_1_tmp(*this);//need to create copies and make ones complement
+	BigInt num_2_tmp(num_2);
+	if (num_1_digits < num_2_digits) {
+		num_1_tmp.number.resize(num_2_digits);
+		num_1_digits = num_2_digits;
 	}
-	for (int j = num_2_digits; j < num_1_digits; j++) number[j] = 0;
-	if (sign == '+' && num_2.sign == '+') {
-		sign = '+';
+	else {
+		num_2_tmp.number.resize(num_1_digits);
+		num_2_digits = num_1_digits;
 	}
-	else sign = '-';
+	if (num_1_tmp.sign == '-') {
+		for (int i = 0; i < num_1_digits; i++) {
+			num_1_tmp.number[i] = ~num_1_tmp.number[i];
+		}
+		carry(num_1_tmp, ((long long)num_1_tmp.number[0]) + 1, 0);
+	}
+	if (num_2_tmp.sign == '-') {
+		for (int i = 0; i < num_2_digits; i++) {
+			num_2_tmp.number[i] = ~num_2_tmp.number[i];
+		}
+		carry(num_2_tmp, ((long long)num_2_tmp.number[0]) + 1, 0);
+	}
+	for (int i = 0; i < num_2_digits; i++) {	//-1 due to coorrect work in highest digit
+		num_1_tmp.number[i] &= num_2_tmp.number[i];
+	}
+	if (num_1_tmp.sign == '-' && num_2_tmp.sign == '-') {	//inverse
+		for (int i = 0; i < num_1_digits; i++) {
+			num_1_tmp.number[i] = ~num_1_tmp.number[i];
+		}
+		carry(num_1_tmp, ((long long)num_1_tmp.number[0]) + 1, 0);
+	}
+	if (num_1_tmp.sign == '-' && num_2_tmp.sign == '-') {//need transition back
+		num_1_tmp.sign = '-';
+	}
+	else num_1_tmp.sign = '+';
+	*this = num_1_tmp;
 	return *this;
 }
 
 BigInt& BigInt::operator|=(const BigInt& num_2) {
 	int num_2_digits = used_digits(num_2);
 	int num_1_digits = used_digits(*this);
-	number.resize(max(num_1_digits, num_2_digits));
-	for (int i = 0; i < num_2_digits && i < num_1_digits; i++) {
-		number[i] |= num_2.number[i];
+	BigInt num_1_tmp(*this);//need to create copies and make two's complement
+	BigInt num_2_tmp(num_2);
+	if (num_1_digits < num_2_digits) {
+		num_1_tmp.number.resize(num_2_digits);
+		num_1_digits = num_2_digits;
 	}
-	for (int j = num_1_digits; j < num_2_digits; j++) number[j] = num_2.number[j];
-	if (sign == '+' || num_2.sign == '+') {
-		sign = '+';
+	else {
+		num_2_tmp.number.resize(num_1_digits);
+		num_2_digits = num_1_digits;
 	}
-	else sign = '-';
+	if (num_1_tmp.sign == '-') {
+		for (int i = 0; i < num_1_digits; i++) {
+			num_1_tmp.number[i] = ~num_1_tmp.number[i];
+		}
+		carry(num_1_tmp, ((long long)num_1_tmp.number[0]) + 1, 0);
+	}
+	if (num_2_tmp.sign == '-') {
+		for (int i = 0; i < num_2_digits; i++) {
+			num_2_tmp.number[i] = ~num_2_tmp.number[i];
+		}
+		carry(num_2_tmp, ((long long)num_2_tmp.number[0]) + 1, 0);
+	}
+
+	for (int i = 0; i < num_2_digits; i++) {	//-1 due to coorrect work in highest digit
+		num_1_tmp.number[i] |= num_2_tmp.number[i];
+	}
+	if ((num_1_tmp.sign == '-'  ||  num_2_tmp.sign == '-')) {	//inverse
+		for (int i = 0; i < num_1_digits; i++) {
+			num_1_tmp.number[i] = ~num_1_tmp.number[i];
+		}
+		carry(num_1_tmp, ((long long)num_1_tmp.number[0]) + 1, 0);
+	}
+
+	if (num_1_tmp.sign == '-' || num_2_tmp.sign == '-') {//need transition back
+		num_1_tmp.sign = '-';
+	}
+	else num_1_tmp.sign = '+';
+	*this = num_1_tmp;
 	return *this;
 }
 
@@ -197,7 +295,7 @@ BigInt::operator int() const {
 
 BigInt::operator std::string() const {
 	string str = "";
-	if (*this == BigInt(0)) {	//mistakes
+	if (*this == BigInt(0) || *this == BigInt(-0)) {	//mistakes
 		str.push_back('0');
 		return str;
 	}

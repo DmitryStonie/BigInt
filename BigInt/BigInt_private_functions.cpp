@@ -144,6 +144,10 @@ void BigInt::carry(BigInt& number, long long new_number, int num_index) const { 
 				number.number[j] = (unsigned int)tmp;
 				break;
 			}
+			if (j == num_size - 1 && tmp >= base) {
+				number.number.resize(num_size + 1);
+				num_size++;
+			}
 		}
 		number.number[num_index] = (unsigned int)new_number % base;
 	}
