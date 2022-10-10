@@ -78,7 +78,7 @@ int BigInt::used_digits(const BigInt& num) {	//return number of highest unzero d
 int BigInt::used_digits(const BigInt& num) const {	//funny, but without this doesn't compile ==
 	int i = num.number.size() - 1;
 	if (i == 0) return 1;
-	for (;i >= 0;) {
+	for (; i >= 0;) {
 		if (num.number[i] == 0) {
 			i--;
 		}
@@ -168,7 +168,7 @@ void BigInt::carry(BigInt& number, long long new_number, int num_index) const { 
 	}
 }
 
-void IncreaseDecNum(vector<int> &number, int bit) {
+void IncreaseDecNum(vector<int>& number, int bit) {
 	for (int i = 0; i < number.size(); i++) {
 		if (number[i] >= 1000000000) {
 			if (i + 1 == number.size()) {
@@ -196,5 +196,26 @@ void IncreaseDecNum(vector<int> &number, int bit) {
 			number[i + 1] += 1;
 			number[i] = number[i] % 1000000000;
 		}
+	}
+}
+
+void BigInt::carry_mul(BigInt& number, unsigned long long new_number, int num_index) { //carry ����������
+	int num_size = number.number.size();
+	if (new_number >= number.base) { //carry up //need to find bigger nonzero digit
+		number.number[num_index] = (unsigned int)(new_number % (unsigned long long)number.base);
+		unsigned long long tmp = new_number;
+		for (int j = num_index + 1; j < num_size; j++) {
+			tmp = tmp / number.base + (long long)number.number[j];
+			if (tmp >= number.base) {
+				number.number[j] = (unsigned int)(tmp % number.base);
+			}
+			else {
+				number.number[j] = (unsigned int)tmp;
+				break;
+			}
+		}
+	}
+	else {
+		number.number[num_index] = (unsigned int)new_number;
 	}
 }

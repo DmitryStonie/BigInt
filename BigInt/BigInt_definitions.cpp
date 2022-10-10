@@ -92,28 +92,39 @@ BigInt& BigInt::operator+=(const BigInt& num_2) {
 BigInt& BigInt::operator*=(const BigInt& num_2) {
 	int num_1_digits = used_digits(*this);
 	int num_2_digits = used_digits(num_2);
-	long long tmp = 0;
-	BigInt num_1_tmp(*this);
-	BigInt num_2_tmp(num_2);
-	if (num_1_digits < num_2_digits) {
-		num_1_tmp.number.resize(num_2_digits);
-		num_1_digits = num_2_digits;
+	unsigned long long tmp = 0;
+	BigInt num_1_tmp;
+	BigInt num_2_tmp;
+	if (num_1_digits >= num_2_digits) {
+		num_1_tmp = *this;
+		num_2_tmp = num_2;
 	}
 	else {
-		num_2_tmp.number.resize(num_1_digits);
-		num_2_digits = num_1_digits;
+		num_1_tmp = num_2;
+		num_2_tmp = *this;
 	}
-	for (int i = 0; i < num_2_digits; i++) {
-		for (int j = 0; j < num_1_digits; j++) {
-			tmp = (long long)num_1_tmp.number[j] * (long long)num_2_tmp.number[i];
-			carry(num_1_tmp, tmp, i + j);
+	num_1_digits = used_digits(num_1_tmp);
+	num_2_digits = used_digits(num_2_tmp);
+	BigInt answer;
+	answer.number.resize(num_1_digits + num_2_digits);
+	for (int i = 0; i < num_2_digits; i++) {	//digit of second number
+		for (int j = 0; j < num_1_digits; j++) {	//digits of first number
+			tmp = (long long)(num_1_tmp.number[j]) * (long long)(num_2_tmp.number[i]) + (long long)(answer.number[i + j]);
+			carry_mul(answer, tmp, i + j);
 		}
 	}
-	if (num_1_tmp.sign != num_2_tmp.sign) {//need transition back
-		num_1_tmp.sign = '-';
+	if (sign != num_2.sign) {
+		answer.sign = '-';
+	} else answer.sign = '+';
+	int is_zero = 1;
+	for (int i = 0; i < used_digits(answer); i++) {
+		if (answer.number[i] != 0) {
+			is_zero = 0;
+			break;
+		}
 	}
-	else num_1_tmp.sign = '+';
-	*this = num_1_tmp;
+	if (is_zero) answer.sign = '+';
+	*this = answer;
 	return *this;
 }
 
@@ -125,16 +136,63 @@ BigInt& BigInt::operator-=(const BigInt& num_2) {
 }
 
 BigInt& BigInt::operator/=(const BigInt& num_2) {
-	BigInt tmp = *this;
-	BigInt mul = 0;
-	int digit_pos = 0;
-	for (; mul * num_2 < *this;) {
-		for (int j = 0; mul * num_2 < *this;) {
-			if (j % 32 == 0) mul.number[j / 32] = 0;
-			carry(mul, (long long)(1 << (j % 32)), j / 32);
+	int num_1_digits = used_digits(*this);
+	int num_2_digits = used_digits(num_2);
+	BigInt tmp_answer(0);
+	//zero checking
+	int is_zero = 1;
+	for (int i = 0; i < used_digits(num_2); i++) {
+		if (num_2.number[i] != 0) {
+			is_zero = 0;
+			break;
 		}
-
 	}
+	BigInt tmp_1(*this);
+	BigInt tmp_2(num_2);
+	if (sign == '-')tmp_1 = '+';
+	if (num_2.sign == '-')tmp_2 = '+';
+	//if is_zero need mistake message
+	if (is_zero || tmp_2 > tmp_1) return tmp_answer;	//mistake in >
+	long long left_bound = 1;
+	long long right_bound = (unsigned int)(base - 1);
+	long long current_multiplier = 1;
+	tmp_answer.number.resize(num_1_digits - num_2_digits + 1);
+	int i = num_1_digits - num_2_digits - 1;
+	if (num_1_digits == num_2_digits) i = 0;
+	for(; i >= 0; i--) {
+		//set digit of tmp_answer
+		left_bound = 1;
+		right_bound = base - 1;
+		current_multiplier = (left_bound + right_bound) / 2;//sure?
+		tmp_answer.number[i] = current_multiplier;
+		for (; left_bound < right_bound - 1;) {
+			if (tmp_answer * num_2 < *this) {
+				left_bound = current_multiplier;
+			}
+			else if (tmp_answer * num_2 > *this) {
+				right_bound = current_multiplier;
+			}
+			else {
+				break;
+			}
+			current_multiplier = (left_bound + right_bound) / 2;
+			tmp_answer.number[i] = current_multiplier;
+		}
+	}
+
+	if (sign != num_2.sign) {
+		tmp_answer.sign = '-';
+	}
+	else tmp_answer.sign = '+';
+	is_zero = 1;
+	for (int i = 0; i < used_digits(tmp_answer); i++) {
+		if (tmp_answer.number[i] != 0) {
+			is_zero = 0;
+			break;
+		}
+	}
+	if (is_zero) tmp_answer.sign = '+';
+	*this = tmp_answer;
 	return *this;
 }
 
@@ -183,7 +241,8 @@ BigInt& BigInt::operator^=(const BigInt& num_2) {
 }
 
 BigInt& BigInt::operator%=(const BigInt& num_2) {
-	return *this;
+	BigInt tmp((*this) - (*this) / num_2 * num_2);
+	return tmp;
 }
 
 BigInt& BigInt::operator&=(const BigInt& num_2) {

@@ -11,6 +11,7 @@ class BigInt {
 	vector <unsigned int> number;
 	char sign;
 	void carry(BigInt& number, long long new_number, int num_index);
+	void carry_mul(BigInt& number, unsigned long long new_number, int num_index);
 	void carry(BigInt& number, long long new_number, int num_index) const;
 	int digits_in_highest_digit(BigInt& num, int num_of_used_digits);
 	int digits_in_highest_digit(const BigInt& num, int num_of_used_digits);
