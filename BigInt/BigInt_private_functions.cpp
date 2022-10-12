@@ -75,7 +75,7 @@ int BigInt::used_digits(const BigInt& num) {	//return number of highest unzero d
 	return i + 1;
 }
 
-int BigInt::used_digits(const BigInt& num) const {	//funny, but without this doesn't compile ==
+int BigInt::used_digits(const BigInt& num) const {	
 	int i = num.number.size() - 1;
 	if (i == 0) return 1;
 	for (; i >= 0;) {
@@ -218,4 +218,20 @@ void BigInt::carry_mul(BigInt& number, unsigned long long new_number, int num_in
 	else {
 		number.number[num_index] = (unsigned int)new_number;
 	}
+}
+
+int BigInt::is_zero(BigInt& number) {
+	for (int i = number.number.size() - 1; i >= 0; i--) {
+		if (number.number[i] != 0) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+void BigInt::twos_complement(BigInt& number) {
+	for (int i = 0; i < number.number.size(); i++) {
+		number.number[i] = ~number.number[i];
+	}
+	carry(number, ((long long)number.number[0]) + 1, 0);
 }

@@ -77,15 +77,7 @@ BigInt& BigInt::operator+=(const BigInt& num_2) {
 			carry((*this), tmp, i);
 		}
 	}
-	//check for zero
-	int not_zero = 0;
-	for (int i = used_digits(*this) - 1; i >= 0; i--) {
-		if (number[i] != 0) {
-			not_zero = 1;
-			break;
-		}
-	}
-	if (not_zero == 0) sign = '+';
+	if (is_zero(*this)) sign = '+';
 	return *this;
 }
 
@@ -116,14 +108,7 @@ BigInt& BigInt::operator*=(const BigInt& num_2) {
 	if (sign != num_2.sign) {
 		answer.sign = '-';
 	} else answer.sign = '+';
-	int is_zero = 1;
-	for (int i = 0; i < used_digits(answer); i++) {
-		if (answer.number[i] != 0) {
-			is_zero = 0;
-			break;
-		}
-	}
-	if (is_zero) answer.sign = '+';
+	if (is_zero(answer)) answer.sign = '+';
 	*this = answer;
 	return *this;
 }
@@ -139,26 +124,20 @@ BigInt& BigInt::operator/=(const BigInt& num_2) {	//remainder is always 0 <= r <
 	int num_1_digits = used_digits(*this);
 	int num_2_digits = used_digits(num_2);
 	BigInt tmp_answer(0);
-	//zero checking
-	int is_zero = 1;
-	for (int i = 0; i < used_digits(num_2); i++) {
-		if (num_2.number[i] != 0) {
-			is_zero = 0;
-			break;
-		}
-	}
 	BigInt tmp_1(*this);
 	BigInt tmp_2(num_2);
 	if (sign == '-')tmp_1.sign = '+';
 	if (num_2.sign == '-')tmp_2.sign = '+';
-	//if is_zero need mistake message
-	if (is_zero || tmp_2 > tmp_1) {
+	if (is_zero(*this)) {	//if is_zero need mistake message////////////////////////////////////////////////////////////////////////////////////////////////
+
+	}
+	if (tmp_2 > tmp_1) {
 		*this = tmp_answer;
 		return *this;
 	}
-	long long left_bound = 1;
-	long long right_bound = base;
-	long long current_multiplier = 1;
+	long long left_bound = 0;
+	long long right_bound = 0;
+	long long current_multiplier = 0;
 	tmp_answer.number.resize(num_1_digits - num_2_digits + 1);
 	int i = 0;
 	if (num_1_digits > num_2_digits )i = num_1_digits - num_2_digits;//why not -1?
@@ -174,8 +153,7 @@ BigInt& BigInt::operator/=(const BigInt& num_2) {	//remainder is always 0 <= r <
 	}
 	if (i < 0) i = 0;
 	for(; i >= 0; i--) {
-		//set digit of tmp_answer
-		left_bound = -1;
+		left_bound = -1;	//set digit of tmp_answer
 		right_bound = base - 1;
 		for (; left_bound < right_bound - 1;) {
 			current_multiplier = (left_bound + right_bound) / 2;
@@ -189,28 +167,15 @@ BigInt& BigInt::operator/=(const BigInt& num_2) {	//remainder is always 0 <= r <
 		}
 		tmp_answer.number[i] = left_bound;
 		if (tmp_answer * tmp_2 > tmp_1) {
-			tmp_answer.number[i] = 0;//right with -?
+			tmp_answer.number[i] = 0;
 		}
 	}
-	BigInt zero(0);
-	if (sign != num_2.sign) {
-		tmp_answer.sign = '-';
-		if (tmp_1 - tmp_answer * num_2 < zero)
-			tmp_answer -= 1;
-	}
+	if (sign != num_2.sign) tmp_answer.sign = '-';
 	else tmp_answer.sign = '+';
-	if ((*this) - (tmp_answer * num_2) < zero) {//for positive reminder
-		zero = (*this) - (tmp_answer * num_2);
+	if ((*this) - (tmp_answer * num_2) < BigInt(0)) {//for positive reminder
 		tmp_answer += 1;
 	}
-	is_zero = 1;
-	for (int i = 0; i < used_digits(tmp_answer); i++) {
-		if (tmp_answer.number[i] != 0) {
-			is_zero = 0;
-			break;
-		}
-	}
-	if (is_zero) tmp_answer.sign = '+';
+	if (is_zero(tmp_answer)) tmp_answer.sign = '+';
 	*this = tmp_answer;
 	return *this;
 }
@@ -229,33 +194,20 @@ BigInt& BigInt::operator^=(const BigInt& num_2) {
 		num_2_digits = num_1_digits;
 	}
 	if (num_1_tmp.sign == '-') {
-		for (int i = 0; i < num_1_digits; i++) {
-			num_1_tmp.number[i] = ~num_1_tmp.number[i];
-		}
-		carry(num_1_tmp, ((long long)num_1_tmp.number[0]) + 1, 0);
+		twos_complement(num_1_tmp);
 	}
 	if (num_2_tmp.sign == '-') {
-		for (int i = 0; i < num_2_digits; i++) {
-			num_2_tmp.number[i] = ~num_2_tmp.number[i];
-		}
-		carry(num_2_tmp, ((long long)num_2_tmp.number[0]) + 1, 0);
+		twos_complement(num_2_tmp);
 	}
-
 	for (int i = 0; i < num_2_digits; i++) {	//-1 due to coorrect work in highest digit
 		num_1_tmp.number[i] ^= num_2_tmp.number[i];
 	}
 	if ((num_1_tmp.sign == '-' && num_2_tmp.sign == '+') || (num_2_tmp.sign == '-' && num_1_tmp.sign == '+')) {	//inverse
-		for (int i = 0; i < num_1_digits; i++) {
-			num_1_tmp.number[i] = ~num_1_tmp.number[i];
-		}
-		carry(num_1_tmp, ((long long)num_1_tmp.number[0]) + 1, 0);
+		twos_complement(num_1_tmp);
 	}
-	if (num_1_tmp.sign ==  num_2_tmp.sign) {//need transition back
-		num_1_tmp.sign = '+';
-	}
+	if (num_1_tmp.sign ==  num_2_tmp.sign) num_1_tmp.sign = '+';
 	else num_1_tmp.sign = '-';
 	*this = num_1_tmp;
-	return *this;
 	return *this;
 }
 
@@ -280,29 +232,18 @@ BigInt& BigInt::operator&=(const BigInt& num_2) {
 		num_2_digits = num_1_digits;
 	}
 	if (num_1_tmp.sign == '-') {
-		for (int i = 0; i < num_1_digits; i++) {
-			num_1_tmp.number[i] = ~num_1_tmp.number[i];
-		}
-		carry(num_1_tmp, ((long long)num_1_tmp.number[0]) + 1, 0);
+		twos_complement(num_1_tmp);
 	}
 	if (num_2_tmp.sign == '-') {
-		for (int i = 0; i < num_2_digits; i++) {
-			num_2_tmp.number[i] = ~num_2_tmp.number[i];
-		}
-		carry(num_2_tmp, ((long long)num_2_tmp.number[0]) + 1, 0);
+		twos_complement(num_2_tmp);
 	}
 	for (int i = 0; i < num_2_digits; i++) {	//-1 due to coorrect work in highest digit
 		num_1_tmp.number[i] &= num_2_tmp.number[i];
 	}
 	if (num_1_tmp.sign == '-' && num_2_tmp.sign == '-') {	//inverse
-		for (int i = 0; i < num_1_digits; i++) {
-			num_1_tmp.number[i] = ~num_1_tmp.number[i];
-		}
-		carry(num_1_tmp, ((long long)num_1_tmp.number[0]) + 1, 0);
+		twos_complement(num_1_tmp);
 	}
-	if (num_1_tmp.sign == '-' && num_2_tmp.sign == '-') {//need transition back
-		num_1_tmp.sign = '-';
-	}
+	if (num_1_tmp.sign == '-' && num_2_tmp.sign == '-') num_1_tmp.sign = '-';
 	else num_1_tmp.sign = '+';
 	*this = num_1_tmp;
 	return *this;
@@ -322,16 +263,10 @@ BigInt& BigInt::operator|=(const BigInt& num_2) {
 		num_2_digits = num_1_digits;
 	}
 	if (num_1_tmp.sign == '-') {
-		for (int i = 0; i < num_1_digits; i++) {
-			num_1_tmp.number[i] = ~num_1_tmp.number[i];
-		}
-		carry(num_1_tmp, ((long long)num_1_tmp.number[0]) + 1, 0);
+		twos_complement(num_1_tmp);
 	}
 	if (num_2_tmp.sign == '-') {
-		for (int i = 0; i < num_2_digits; i++) {
-			num_2_tmp.number[i] = ~num_2_tmp.number[i];
-		}
-		carry(num_2_tmp, ((long long)num_2_tmp.number[0]) + 1, 0);
+		twos_complement(num_2_tmp);
 	}
 
 	for (int i = 0; i < num_2_digits; i++) {	//-1 due to coorrect work in highest digit
@@ -375,7 +310,7 @@ BigInt::operator int() const {
 
 BigInt::operator std::string() const {
 	string str = "";
-	if (*this == BigInt(0) || *this == BigInt(-0)) {	//mistakes
+	if (*this == BigInt(0) || *this == BigInt(-0)) {
 		str.push_back('0');
 		return str;
 	}
