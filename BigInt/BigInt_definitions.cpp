@@ -135,7 +135,7 @@ BigInt& BigInt::operator-=(const BigInt& num_2) {
 	return *this;
 }
 
-BigInt& BigInt::operator/=(const BigInt& num_2) {
+BigInt& BigInt::operator/=(const BigInt& num_2) {	//remainder is always 0 <= r < b
 	int num_1_digits = used_digits(*this);
 	int num_2_digits = used_digits(num_2);
 	BigInt tmp_answer(0);
@@ -149,41 +149,60 @@ BigInt& BigInt::operator/=(const BigInt& num_2) {
 	}
 	BigInt tmp_1(*this);
 	BigInt tmp_2(num_2);
-	if (sign == '-')tmp_1 = '+';
-	if (num_2.sign == '-')tmp_2 = '+';
+	if (sign == '-')tmp_1.sign = '+';
+	if (num_2.sign == '-')tmp_2.sign = '+';
 	//if is_zero need mistake message
-	if (is_zero || tmp_2 > tmp_1) return tmp_answer;	//mistake in >
+	if (is_zero || tmp_2 > tmp_1) {
+		*this = tmp_answer;
+		return *this;
+	}
 	long long left_bound = 1;
-	long long right_bound = (unsigned int)(base - 1);
+	long long right_bound = base;
 	long long current_multiplier = 1;
 	tmp_answer.number.resize(num_1_digits - num_2_digits + 1);
-	int i = num_1_digits - num_2_digits - 1;
-	if (num_1_digits == num_2_digits) i = 0;
-	for(; i >= 0; i--) {
-		//set digit of tmp_answer
-		left_bound = 1;
-		right_bound = base - 1;
-		current_multiplier = (left_bound + right_bound) / 2;//sure?
-		tmp_answer.number[i] = current_multiplier;
-		for (; left_bound < right_bound - 1;) {
-			if (tmp_answer * num_2 < *this) {
-				left_bound = current_multiplier;
-			}
-			else if (tmp_answer * num_2 > *this) {
-				right_bound = current_multiplier;
-			}
-			else {
-				break;
-			}
-			current_multiplier = (left_bound + right_bound) / 2;
-			tmp_answer.number[i] = current_multiplier;
+	int i = 0;
+	if (num_1_digits > num_2_digits )i = num_1_digits - num_2_digits;//why not -1?
+	if (i > 0) {
+		tmp_answer.number[i] = 1;
+		if (tmp_answer * tmp_2 > tmp_1) {
+			tmp_answer.number[i] = 0;
+			i--;
+		}
+		else{
+			tmp_answer.number[i] = 0;
 		}
 	}
-
+	if (i < 0) i = 0;
+	for(; i >= 0; i--) {
+		//set digit of tmp_answer
+		left_bound = -1;
+		right_bound = base - 1;
+		for (; left_bound < right_bound - 1;) {
+			current_multiplier = (left_bound + right_bound) / 2;
+			tmp_answer.number[i] = current_multiplier;
+			if (tmp_answer * tmp_2 <= tmp_1) {
+				left_bound = current_multiplier;
+			}
+			else{
+				right_bound = current_multiplier;
+			}
+		}
+		tmp_answer.number[i] = left_bound;
+		if (tmp_answer * tmp_2 > tmp_1) {
+			tmp_answer.number[i] = 0;//right with -?
+		}
+	}
+	BigInt zero(0);
 	if (sign != num_2.sign) {
 		tmp_answer.sign = '-';
+		if (tmp_1 - tmp_answer * num_2 < zero)
+			tmp_answer -= 1;
 	}
 	else tmp_answer.sign = '+';
+	if ((*this) - (tmp_answer * num_2) < zero) {//for positive reminder
+		zero = (*this) - (tmp_answer * num_2);
+		tmp_answer += 1;
+	}
 	is_zero = 1;
 	for (int i = 0; i < used_digits(tmp_answer); i++) {
 		if (tmp_answer.number[i] != 0) {
@@ -240,9 +259,11 @@ BigInt& BigInt::operator^=(const BigInt& num_2) {
 	return *this;
 }
 
-BigInt& BigInt::operator%=(const BigInt& num_2) {
-	BigInt tmp((*this) - (*this) / num_2 * num_2);
-	return tmp;
+BigInt& BigInt::operator%=(const BigInt& num_2) {	//remainder is always 0 <= r < b
+	BigInt tmp(*this);
+	tmp = tmp - (tmp / num_2) * num_2;
+	(*this) = tmp;
+	return *this;
 }
 
 BigInt& BigInt::operator&=(const BigInt& num_2) {
@@ -429,7 +450,8 @@ BigInt operator^(const BigInt& num_1, const BigInt& num_2) {
 
 BigInt operator%(const BigInt& num_1, const BigInt& num_2) {
 	BigInt tmp(num_1);
-	return tmp %= num_2;
+	tmp %= num_2;
+	return tmp;
 }
 
 BigInt operator&(const BigInt& num_1, const BigInt& num_2) {
