@@ -60,7 +60,8 @@ public:
 	int used_digits(const BigInt& num);
 	int used_digits(const BigInt& num) const;
 	int is_number(std::string& str_num);
-	int is_zero(BigInt& number);
+	friend int is_zero(BigInt& number);
+	friend int is_zero(const BigInt& number);
 	void twos_complement(BigInt& number);
 	char set_sign(char symbol);
 

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <exception>
 #include "BigInt.h"
 
 BigInt& BigInt::operator=(const BigInt& num_2) {
@@ -126,11 +127,11 @@ BigInt& BigInt::operator/=(const BigInt& num_2) {	//remainder is always 0 <= r <
 	BigInt tmp_answer(0);
 	BigInt tmp_1(*this);
 	BigInt tmp_2(num_2);
+	if (is_zero(num_2)) {
+		throw std::exception("Error: zero division.\n");
+	}
 	if (sign == '-')tmp_1.sign = '+';
 	if (num_2.sign == '-')tmp_2.sign = '+';
-	if (is_zero(*this)) {	//if is_zero need mistake message////////////////////////////////////////////////////////////////////////////////////////////////
-
-	}
 	if (tmp_2 > tmp_1) {
 		*this = tmp_answer;
 		return *this;

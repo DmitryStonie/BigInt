@@ -3,6 +3,7 @@
 #include <iostream>
 
 int BigInt::is_number(std::string& str_num) {
+	if (str_num.length() == 0) return 0;
 	if ((str_num[0] == '+' || str_num[0] == '-' || (str_num[0] >= '0' && str_num[0] <= '9')) == 0) return 0;
 	for (int i = 1; i < str_num.size(); i++) {
 		if ((str_num[i] >= '0' && str_num[i] <= '9') == 0) return 0;
@@ -220,7 +221,16 @@ void BigInt::carry_mul(BigInt& number, unsigned long long new_number, int num_in
 	}
 }
 
-int BigInt::is_zero(BigInt& number) {
+int is_zero(BigInt& number) {
+	for (int i = number.number.size() - 1; i >= 0; i--) {
+		if (number.number[i] != 0) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int is_zero(const BigInt& number) {
 	for (int i = number.number.size() - 1; i >= 0; i--) {
 		if (number.number[i] != 0) {
 			return 0;

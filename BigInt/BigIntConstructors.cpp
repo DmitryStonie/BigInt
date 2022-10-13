@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include <string>
 #include <stdexcept>
@@ -7,7 +8,6 @@ using namespace std;
 
 BigInt::BigInt() {
 	number.resize(default_size);
-	number[0] = 0;
 	sign = '+';
 }
 
@@ -26,11 +26,11 @@ BigInt::BigInt(int a) {
 }
 
 BigInt::BigInt(std::string str_num) {
-	if (is_number(str_num) == 0) {								// check for not a number
-		throw std::invalid_argument("Invalid syntax.");				// exception doesn't handle
-		return;
+	if (is_number(str_num) == 0) {
+		sign = '+';
+		throw std::invalid_argument("Error: not a number.\n");
 	}
-	string tmp = str_num;											//error when empty string
+	string tmp = str_num;											
 	int last_index = str_num.length() - 1, first_index = 0;
 	for (int i = 0; i <= last_index; i++) tmp[i] -= 48;				//from chars to numbers
 	sign = set_sign(str_num[0]);
@@ -60,6 +60,9 @@ BigInt::BigInt(std::string str_num) {
 				break;
 			}
 		}
+	}
+	if (is_zero(*this)) {
+		sign = '+';
 	}
 }
 
