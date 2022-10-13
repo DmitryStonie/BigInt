@@ -10,16 +10,6 @@ class BigInt {
 	long long base = 4'294'967'296;
 	vector <unsigned int> number;
 	char sign;
-	void carry(BigInt& number, long long new_number, int num_index);
-	void carry(BigInt& number, long long new_number, int num_index) const;
-	int digits_in_highest_digit(BigInt& num, int num_of_used_digits);
-	int digits_in_highest_digit(const BigInt& num, int num_of_used_digits);
-	int digits_in_highest_digit(const BigInt& num, int used_digits) const;
-	int used_digits(BigInt& num);
-	int used_digits(const BigInt& num);
-	int used_digits(const BigInt& num) const;
-	int is_number(std::string& str_num);
-	char set_sign(char symbol);
 public:
 	BigInt();
 	BigInt(int a);
@@ -60,6 +50,21 @@ public:
 
 	size_t size() const;  // size in bytes
 
+	void carry(BigInt& number, long long new_number, int num_index);
+	void carry_mul(BigInt& number, unsigned long long new_number, int num_index);
+	void carry(BigInt& number, long long new_number, int num_index) const;
+	int digits_in_highest_digit(BigInt& num, int num_of_used_digits);
+	int digits_in_highest_digit(const BigInt& num, int num_of_used_digits);
+	int digits_in_highest_digit(const BigInt& num, int used_digits) const;
+	int used_digits(BigInt& num);
+	int used_digits(const BigInt& num);
+	int used_digits(const BigInt& num) const;
+	int is_number(std::string& str_num);
+	friend int is_zero(BigInt& number);
+	friend int is_zero(const BigInt& number);
+	void twos_complement(BigInt& number);
+	char set_sign(char symbol);
+
 };
 
 BigInt operator+(const BigInt& num_1, const BigInt& num_2);
@@ -73,4 +78,6 @@ BigInt operator|(const BigInt& num_1, const BigInt& num_2);
 
 
 std::ostream& operator<<(std::ostream& o, const BigInt& i);
+
+void IncreaseDecNum(vector<int> &number, int bit);
 #endif

@@ -1,8 +1,8 @@
 #include "BigInt.h"
 
 bool BigInt::operator==(const BigInt& num_2) const {
-	int num_2_digits = used_digits(num_2);
 	int num_1_digits = used_digits(*this);
+	int num_2_digits = used_digits(num_2);
 	if (sign != num_2.sign || num_1_digits != num_2_digits) return 0;
 	for (int i = 0; i < num_1_digits; i++) {
 		if (number[i] != num_2.number[i]) return 0;
@@ -15,8 +15,8 @@ bool BigInt::operator!=(const BigInt& num_2) const {
 }
 
 bool BigInt::operator<(const BigInt& num_2) const {
-	int num_2_digits = used_digits(num_2);
 	int num_1_digits = used_digits(*this);
+	int num_2_digits = used_digits(num_2);
 	if ((sign == '-' && num_2.sign == '+')) return 1;
 	else if ((sign == '+' && num_2.sign == '-')) return 0;
 	else if (sign == '+' && num_2.sign == '+') {

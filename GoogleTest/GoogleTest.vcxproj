@@ -86,7 +86,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>..\BigInt\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>BigInt_bool_functions.obj;BigInt_constructors.obj;BigInt_definitions.obj;BigInt_private_functions.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>BigIntBoolOperators.obj;BigIntConstructors.obj;BigIntFunctions.obj;BigIntOperators.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

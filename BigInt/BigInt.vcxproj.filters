@@ -18,16 +18,16 @@
     <ClCompile Include="BigInt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BigInt_constructors.cpp">
+    <ClCompile Include="BigIntConstructors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BigInt_bool_functions.cpp">
+    <ClCompile Include="BigIntBoolOperators.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BigInt_definitions.cpp">
+    <ClCompile Include="BigIntOperators.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BigInt_private_functions.cpp">
+    <ClCompile Include="BigIntFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
